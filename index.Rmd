@@ -164,7 +164,70 @@ devtools::check(pkg_dir)
 ```
 #### **comments:**
 
+`devtools::check(pkg_dir)`
 <!-- record comments on checks here -->
+0 errors ✔ | 1 warning ✖ | 1 note ✖
+
+checking for code/documentation mismatches ... WARNING
+  Variables with usage in documentation object 'ee-citation' but not in code:
+    ‘ee$Image$Extra_getCitation(x)’
+    ‘ee$ImageCollection$Extra_getCitation(x)’
+  
+  Variables with usage in documentation object 'ee-getdoi' but not in code:
+    ‘ee$Image$Extra_getDOI(x)’ ‘ee$ImageCollection$Extra_getDOI(x)’
+  
+  Variables with usage in documentation object 'ee-getoffset' but not in code:
+    ‘ee$Image$Extra_getOffsetParams(x)’
+    ‘ee$ImageCollection$Extra_getOffsetParams(x)’
+  
+  Variables with usage in documentation object 'ee-getscaleparams' but not in code:
+    ‘ee$Image$Extra_getScaleParams(x)’
+    ‘ee$ImageCollection$Extra_getScaleParams(x)’
+  
+  Variables with usage in documentation object 'ee-getstac' but not in code:
+    ‘ee$Image$Extra_getSTAC(x)’ ‘ee$ImageCollection$Extra_getSTAC(x)’
+  
+  Variables with usage in documentation object 'ee-pansharpen' but not in code:
+    ‘ee$Image$Extra_panSharpen(x, ...)’
+  
+  Variables with usage in documentation object 'ee-preprocess' but not in code:
+    ‘ee$Image$Extra_preprocess(x, ...)’
+    ‘ee$ImageCollection$Extra_preprocess(x, ...)’
+  
+  Variables with usage in documentation object 'ee-scaleandoffset' but not in code:
+    ‘ee$Image$Extra_scaleAndOffset(x)’
+    ‘ee$ImageCollection$Extra_scaleAndOffset(x)’
+  
+  Variables with usage in documentation object 'ee-tasseledcap' but not in code:
+    ‘ee$Image$Extra_tasseledCap(x)’
+  
+  Variables with usage in documentation object 'ee_ImageCollection_closest' but not in code:
+    ‘ee$ImageCollection$Extra_closest(x, ...)’
+  
+  Variables with usage in documentation object 'ee_Image_maskClouds' but not in code:
+    ‘ee$Image$Extra_maskClouds(x, ...)’
+  
+  Variables with usage in documentation object 'ee_Image_matchHistogram' but not in code:
+    ‘ee$Image$Extra_matchHistogram(x, ...)’
+  
+  Variables with usage in documentation object 'ee_Image_spectralIndex' but not in code:
+    ‘ee$Image$Extra_spectralIndex(x, ...)’
+  
+  Variables with usage in documentation object 'extremeValues' but not in code:
+    ‘ee$Image$Extra_maxValue(x, ...)’ ‘ee$Image$Extra_minValue(x, ...)’
+  
+  Variables with usage in documentation object 'names(x) <- value' but not in code:
+    ‘names(x) <- value’
+  
+  Variables with usage in documentation object 'names.ee.image.Image' but not in code:
+    ‘names(x)’
+
+
+checking installed package size ... NOTE
+    installed size is 15.2Mb
+    sub-directories of 1Mb or more:
+      doc       12.4Mb
+      ee_extra   1.6Mb
 
 ***
 
@@ -175,7 +238,10 @@ devtools::test(pkg_dir)
 ```
 #### **comments:**
 
-<!-- record comments on tests here -->
+══ Results ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+Duration: 273.4 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 135 ]
 
 ***
 
