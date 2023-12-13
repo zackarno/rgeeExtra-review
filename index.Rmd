@@ -115,9 +115,24 @@ remove.packages("rgeeExtra")
 ```
 #### **comments:**
 
-<!-- record comments on local install here -->
+Local installation gave this warning:
 
-***
+```{r}
+#> The downloaded binary packages are in
+#> 	/var/folders/61/cp06zhcj4y76q7rfx0qlm06c0000gn/T//RtmpKpjkIO/downloaded_packages
+#> Warning: internal error -5 in R_decompress1Error in install(pkg_dir, dependencies = T, build_vignettes = T) : 
+#>  lazy-load database '/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/pkgbuild/R/pkgbuild.rdb' is corrupt
+```
+
+It seems to have failed because:
+```{r}
+library(rgeeExtra)
+#> Error in library(rgeeExtra) : there is no package called ‘rgeeExtra’
+```
+
+- Therefore, I clicked uninstall `{pkgbuild}` in the Rstudio package manager and repeated the install - Same warning
+- Next I just tried `install.packages("pkgbuild") - after this was successful, installing rgeeExtra from local and GitHub both worked
+
 
 ### test install of `rgeeExtra` from GitHub with:
 
@@ -125,9 +140,16 @@ remove.packages("rgeeExtra")
 devtools::install_github("r-earthengine/rgeeExtra", dependencies = T, build_vignettes = T)
 ```
 
+
 #### **comments:**
 
-<!-- record comments on github install here -->
+running this directly after the local install attempt yields:
+
+```{r}
+devtools::install_github("r-earthengine/rgeeExtra", dependencies = T, build_vignettes = T)
+#> Warning: internal error -3 in R_decompress1Error in devtools::install_github("r-earthengine/rgeeExtra", dependencies = T,  : 
+#>  lazy-load database '/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/pkgbuild/R/pkgbuild.rdb' is corrupt
+```
 
 ***
 
