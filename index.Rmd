@@ -1,0 +1,290 @@
+---
+output:
+    html_notebook:
+        toc: true
+        toc_float: true
+editor_options:
+  chunk_output_type: inline
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+library(magrittr)
+library(devtools)
+```
+
+# `rgeeExtra` - package review
+
+## **Reviewer:** [\@zackarno](https://github.com/zackarno)
+
+### Review Submitted:
+**`r cat(sprintf("**Last updated:** %s", Sys.Date()))`**
+
+***
+
+<br>
+
+This report contains documents associated with the review of **rOpenSci** submitted package:
+
+### **`rgeeExtra`: ropensci/software-review**  issue [\#NA](https://github.com/ropensci/onboarding/issues/).
+
+<br>
+
+## Package info
+
+**Description:**
+
+High-level API to process Google Earth Engine (GEE) raster (ee.Image and ee.ImageCollection) and vector data (ee.Geometry, ee.Feature, and ee.FeatureCollection). Popular Third-party GEE algorithms are re-coded from Javascript and Python to R.
+
+**Author:** `r 
+    c(person(given = "Cesar",
+           family = "Aybar",
+           role = c("aut", "cre"),
+           email = "csaybar@gmail.com",
+           comment = c(ORCID = "0000-0003-2745-9535")),
+      person(given = "David",
+           family = "Montero",
+	         role = c("ctb"),
+	         email = "dml.mont@gmail.com",
+	         comment = c(ORCID = "0000-0002-9010-3286")),
+      person(given = "Lesly",
+           family = "Bautista",
+	         role = c("ctb"),
+	         email = "leslyarcelly.213@gmail.com",
+	         comment = c(ORCID = "0000-0003-3523-8687")),
+      person(given = "Marc",
+           family = "Choisy",
+	         role = c("ctb"),
+	         email = "mchoisy@oucru.org",
+	         comment = c(ORCID = "0000-0002-5187-6390"))
+    )`
+
+**repo url:** <https://github.com/r-earthengine/rgeeExtra>
+
+**website url:** <https://r-earthengine.github.io/rgeeExtra/>
+
+## Review info
+
+
+#### See [reviewer guidelines](https://ropensci.github.io/dev_guide/reviewerguide.html) for further information on the rOpenSci review process.
+
+**key review checks:**
+
+- Does the code comply with **general principles in the [Mozilla reviewing guide](https://mozillascience.github.io/codeReview/review.html)**?
+- Does the package **comply with the [ROpenSci packaging guide](https://ropensci.github.io/dev_guide/building.html)**?
+- Are there **improvements** that could be made to the **code style?**
+- Is there **code duplication** in the package that should be reduced?
+- Are there **user interface improvements** that could be made?
+- Are there **performance improvements** that could be made?
+- Is the [**documentation**](https://ropensci.github.io/dev_guide/building.html#documentation) (installation instructions/vignettes/examples/demos) **clear and sufficient**?
+
+Please be respectful and kind to the authors in your reviews. The rOpenSci [code of conduct](https://ropensci.github.io/dev_guide/policies.html#code-of-conduct) is mandatory for everyone involved in our review process.
+
+***
+
+### session info
+
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+
+```{r pkg_dir, echo = F}
+pkg_dir <- "/Users/zackarno/Documents/CHD/repos/rOpenSci/reviews/rgeeExtra"
+```
+
+## Test installation
+
+### test local `rgeeExtra` install:
+
+```{r test-local}
+install(pkg_dir, dependencies = T, build_vignettes = T)
+```
+
+```{r github-rm}
+remove.packages("rgeeExtra")
+```
+#### **comments:**
+
+<!-- record comments on local install here -->
+
+***
+
+### test install of `rgeeExtra` from GitHub with:
+
+```{r test-github}
+devtools::install_github("r-earthengine/rgeeExtra", dependencies = T, build_vignettes = T)
+```
+
+#### **comments:**
+
+<!-- record comments on github install here -->
+
+***
+
+
+
+## Check package integrity
+
+### run checks on `rgeeExtra` source:
+
+```{r check-checks}
+devtools::check(pkg_dir)
+```
+#### **comments:**
+
+<!-- record comments on checks here -->
+
+***
+
+### run tests on `rgeeExtra` source:
+
+```{r check-tests}
+devtools::test(pkg_dir)
+```
+#### **comments:**
+
+<!-- record comments on tests here -->
+
+***
+
+
+### check `rgeeExtra` for goodpractice:
+
+```{r test-goodpractice}
+goodpractice::gp(pkg_dir)
+```
+#### **comments:**
+
+<!-- record comments on goodpractice here -->
+
+***
+
+## Check package metadata files
+
+### inspect
+
+- #### [README](https://github.com/r-earthengine/rgeeExtra)
+- #### [DESCRIPTION](https://github.com/r-earthengine/rgeeExtra/blob/master/DESCRIPTION)
+- #### [NAMESPACE](https://github.com/r-earthengine/rgeeExtra/blob/master/NAMESPACE)
+
+### spell check
+
+```{r spell-check}
+devtools::spell_check(pkg_dir)
+```
+
+#### **comments:**
+
+<!-- record comments on metadata files here -->
+
+***
+
+## Check documentation
+
+online documentation: **<https://r-earthengine.github.io/rgeeExtra/>**
+
+* Is the [documentation](https://ropensci.github.io/dev_guide/building.html#documentation) (installation instructions/vignettes/examples/demos) clear and sufficient?
+
+### test `rgeeExtra` function help files:
+
+```{r test-help}
+help(package = "rgeeExtra")
+```
+
+#### **comments:**
+
+<!-- record comments on help files here -->
+
+***
+
+### test `rgeeExtra` vignettes:
+
+```{r test-vignettes}
+vignette(package = "rgeeExtra")
+```
+
+#### **comments:**
+
+<!-- record comments on vignettes here -->
+
+***
+
+## Test functionality:
+
+- Are there **user interface improvements** that could be made?
+- Are there **performance improvements** that could be made?
+
+```{r free-style}
+library("rgeeExtra")
+```
+
+```{r parse-functions}
+exports <-ls("package:rgeeExtra")
+exports
+```
+
+<!-- experiment with package functions -->
+
+```{r exp-chunk}
+
+
+```
+
+#### **comments:**
+
+<!-- record comments on package experimentation here -->
+
+***
+
+## Inspect code:
+
+- Does the package **comply with the [ROpenSci packaging guide](https://ropensci.github.io/dev_guide/building.html)**?
+    * good [function & variable naming?](https://ropensci.github.io/dev_guide/building.html#function-and-argument-naming)
+    * good [dependency management](https://ropensci.github.io/dev_guide/building.html#package-dependencies)?
+- Are there **improvements** that could be made to the [**code style?**](https://ropensci.github.io/dev_guide/building.html#code-style)
+- Is there **code duplication** in the package that should be reduced?
+
+```{r inspect-code}
+pkgreviewr::pkgreview_print_source("rgeeExtra")
+```
+**\* might not be suitable for large packages with many exported functions**
+
+
+<br>
+<br>
+
+#### **comments:**
+
+<!-- record comments on package source code here -->
+
+
+## Review test suite:
+
+See guidance on [testing](https://ropensci.github.io/dev_guide/building.html#testing) for further details.
+
+### test coverage
+
+```{r pkg_coverage}
+covr::package_coverage(pkg_dir)
+
+```
+
+### inspect [tests](https://github.com/r-earthengine/rgeeExtra/blob/master/tests/testthat)
+
+
+#### **comments:**
+
+<!-- record comments on testing suite here -->
+
+
+***
