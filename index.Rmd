@@ -1,4 +1,5 @@
 ---
+title: "rgee Review"
 output:
     html_notebook:
         toc: true
@@ -147,8 +148,17 @@ running this directly after the local install attempt yields:
 
 ```{r}
 devtools::install_github("r-earthengine/rgeeExtra", dependencies = T, build_vignettes = T)
+
 #> Warning: internal error -3 in R_decompress1Error in devtools::install_github("r-earthengine/rgeeExtra", dependencies = T,  : 
 #>  lazy-load database '/Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/library/pkgbuild/R/pkgbuild.rdb' is corrupt
+
+```
+I later restarted R and reinstalled to get this error:
+```{r}
+#> Using github PAT from envvar GITHUB_TOKEN
+#> Downloading GitHub repo r-earthengine/rgeeExtra@HEAD
+#> Error in utils::download.file(url, path, method = method, quiet = quiet,  : 
+#>   download from 'https://api.github.com/repos/r-earthengine/rgeeExtra/tarball/HEAD' failed
 ```
 
 ***
@@ -252,8 +262,21 @@ Duration: 273.4 s
 goodpractice::gp(pkg_dir)
 ```
 #### **comments:**
+tests
+── GP rgeeExtra ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-<!-- record comments on goodpractice here -->
+It is good practice to
+
+  ✖ write unit tests for all functions, and all package code in general. 90% of code lines are covered by test
+    cases.
+
+    R/ee_gif.R:230:NA
+    R/ee_gif.R:231:NA
+    R/ee_gif.R:232:NA
+    R/ee_gif.R:233:NA
+    R/ee_gif.R:234:NA
+    ... and 46 more lines
+
 
 ***
 
@@ -271,9 +294,14 @@ goodpractice::gp(pkg_dir)
 devtools::spell_check(pkg_dir)
 ```
 
+
 #### **comments:**
 
-<!-- record comments on metadata files here -->
+`devtools::spell_check()` results that seem worth fixing
+
+Aditional            Aditional.Rmd:2
+IGARSS’            ee-tasseledcap.Rd:50
+coefficeints         ee-tasseledcap.Rd:43
 
 ***
 
@@ -291,7 +319,7 @@ help(package = "rgeeExtra")
 
 #### **comments:**
 
-<!-- record comments on help files here -->
+`help(package = "rgeeExtra")`return "URL '/help/library/rgeeExtra/html/00Index.html' not found" in Rstudio Help viewer
 
 ***
 
@@ -303,7 +331,7 @@ vignette(package = "rgeeExtra")
 
 #### **comments:**
 
-<!-- record comments on vignettes here -->
+Loaded well
 
 ***
 
@@ -323,9 +351,94 @@ exports
 
 <!-- experiment with package functions -->
 
+```{r}
+library(rgee)
+library(rgeeExtra)
+library(tidyverse)
+ee_Initialize()
+extra_Initialize()
+url_s2 <- "COPERNICUS/S2"
+ic <- ee$ImageCollection(url_s2)
+```
+
+## `ee_ImageCollection_closest`/ `Extra_closest()` (3 issues)
+- **1. date issue** doesn't accept an r Date (as_date(x)) as specified in ?help doc (date issue)
+- **2. return value issue** - Return ImageCollection, contrary to return value specified in ?help doc. If area just contains 1 closest image then perhaps it should return image? Otherwise image collection? (return)
+- **3. error warning/message issue** See error message in code below
+
+
+
+### Date issue
+`?ee_ImageCollection_closest` states: "dateee$Date or R date object. Date of interest for searching the closest image." But doesn't seem to work with R date. Also is that a typo in the documentation **dateee$Date**?
+```{r}
+date_chr <- "2023-12-15"
+date_dt<- as_date(date_chr)
+
+ic_closest_from_dt_obj <-  ic$Extra_closest(date_dt)
+#> Error in py_call_impl(callable, call_args$unnamed, call_args$named) : 
+#>   ee.ee_exception.EEException: Invalid argument specified for ee.Date(): 2023-12-15
+#> Run `reticulate::py_last_error()` for details.
+
+```
+
+
+```{r}
+ic_closest <- ic$Extra_closest(date_chr)
+ee_print(ic_closest)
+# > Rsession gets aborted so hard to say if this is working 
+```
+
+Let's define an AOI
+```{r}
+library(sf)
+sf_aoi_pt <-  st_as_sf(tibble(X= 40.383686, Y=7.524345),
+                       coords= c("X","Y"),
+                       crs= 4326)
+ee_aoi_pt <-  sf_as_ee(sf_aoi_pt)
+
+
+ic_bounded <- ic$filterBounds(ee_aoi_pt)
+
+```
+
+### Error Message Issue
+Tried this 2x and got the error message?
+```{r}
+# okay lets try closest date
+
+ # did this 2x in a row and got the
+ic_bounded_closest <- ic_bounded$Extra_closest(date_chr)
+ic_bounded_closest %>% class() # interesting that it is an IC... Shouldn't it be an image?
+
+ee_get_date_ic(ic_bounded_closest) 
+#> MESSAGE:
+#> Warning: cannot open compressed file   '/Users/zackarno/.local/share/rstudio/notebooks/567CFE7F-index/1/990FACFD1b92e9be/c2wnr33p6yr80_t/_rs_rdf_5e342fbe8541.rdf', probable reason 'No such file #> or directory'Error in gzfile(file, "wb") : cannot open the connection
+```
+
+
+- Eventually I did the above and it worked. Is that something with my connection? Was it my connection on the `Extra_closest` call or was it on `ee_get_date_ic()`... either way would be good to have a better error message.
+
+### Return Value Issue
+
+```{r}
+ic_bounded_closest_5d <- ic_bounded$Extra_closest(date_chr, 5,"day")
+ee_get_date_ic(ic_bounded_closest_5d)
+```
+
+
+``?ee_ImageCollection_closest shows:` return "Value: An ee$Image closest to the specified date." - but it doesn't return an image.
+
+
+
+
+
 ```{r exp-chunk}
+```
 
+```{r exp-chunk}
+```
 
+```{r exp-chunk}
 ```
 
 #### **comments:**
