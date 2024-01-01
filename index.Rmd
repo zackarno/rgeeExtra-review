@@ -321,7 +321,7 @@ help(package = "rgeeExtra")
 
 `help(package = "rgeeExtra")`return "URL '/help/library/rgeeExtra/html/00Index.html' not found" in Rstudio Help viewer
 
-***
+
 
 ### test `rgeeExtra` vignettes:
 
@@ -349,60 +349,67 @@ exports <-ls("package:rgeeExtra")
 exports
 ```
 
-<!-- experiment with package functions -->
+## Overall Comments
+
+- is there a way to make it easier for users to access the function help panel (i.e ?func_name). For example how do users find out more information about the `Extra_*` functions from within Rstudio. In `{rgee}` we can access the documentation with `ee_help()`, but that doesn't work here. After quite a bit of searching I eventually realized there are unexported functions (i.e ee_Image_maskClouds,ee_Image_matchHistogram , etc ) with the help documentation, but this doesn't seem like a super user-friendly place to keep it?
+- enhancement idea: add a `list_spectral_indices()` type function (like eemont.listIndices())- would be cool if the object returned would provide the formula & reference for the index as well
+
+
 
 ```{r}
 library(rgee)
 library(rgeeExtra)
 library(tidyverse)
+library(sf)
 ee_Initialize()
 extra_Initialize()
 url_s2 <- "COPERNICUS/S2"
 ic <- ee$ImageCollection(url_s2)
+
 ```
 
-## `ee_ImageCollection_closest`/ `Extra_closest()` (3 issues)
+## `ee_ImageCollection_closest`/ `Extra_closest()` (3 issues/1 feature idea)
 - **1. date issue** doesn't accept an r Date (as_date(x)) as specified in ?help doc (date issue)
 - **2. return value issue** - Return ImageCollection, contrary to return value specified in ?help doc. If area just contains 1 closest image then perhaps it should return image? Otherwise image collection? (return)
 - **3. error warning/message issue** See error message in code below
-
+- be nice if there was an `n` argument to return more than 1 image
 
 
 ### Date issue
 `?ee_ImageCollection_closest` states: "dateee$Date or R date object. Date of interest for searching the closest image." But doesn't seem to work with R date. Also is that a typo in the documentation **dateee$Date**?
+
 ```{r}
-date_chr <- "2023-12-15"
+date_chr <- "2023-09-10"
 date_dt<- as_date(date_chr)
 
 ic_closest_from_dt_obj <-  ic$Extra_closest(date_dt)
 #> Error in py_call_impl(callable, call_args$unnamed, call_args$named) : 
-#>   ee.ee_exception.EEException: Invalid argument specified for ee.Date(): 2023-12-15
+#>   ee.ee_exception.EEException: Invalid argument specified for ee.Date(): 2023-09-10
 #> Run `reticulate::py_last_error()` for details.
 
 ```
 
-
+what happens whe **NO** AOI is defined?
 ```{r}
 ic_closest <- ic$Extra_closest(date_chr)
-ee_print(ic_closest)
-# > Rsession gets aborted so hard to say if this is working 
+
+# this is running for a loooong time and always crahses
+ic_closest_dates <- ee_get_date_ic(ic_closest)
+ic_closest_dates
 ```
 
-Let's define an AOI
+When we define an AOI
 ```{r}
-library(sf)
-sf_aoi_pt <-  st_as_sf(tibble(X= 40.383686, Y=7.524345),
-                       coords= c("X","Y"),
-                       crs= 4326)
-ee_aoi_pt <-  sf_as_ee(sf_aoi_pt)
 
+# derna Libya
+ee_aoi <- ee$Geometry$Point( c(22.62697 ,32.75681))
 
-ic_bounded <- ic$filterBounds(ee_aoi_pt)
+ic_bounded <- ic$filterBounds(ee_aoi)
 
 ```
 
-### Error Message Issue
-Tried this 2x and got the error message?
+
+
 ```{r}
 # okay lets try closest date
 
@@ -411,8 +418,6 @@ ic_bounded_closest <- ic_bounded$Extra_closest(date_chr)
 ic_bounded_closest %>% class() # interesting that it is an IC... Shouldn't it be an image?
 
 ee_get_date_ic(ic_bounded_closest) 
-#> MESSAGE:
-#> Warning: cannot open compressed file   '/Users/zackarno/.local/share/rstudio/notebooks/567CFE7F-index/1/990FACFD1b92e9be/c2wnr33p6yr80_t/_rs_rdf_5e342fbe8541.rdf', probable reason 'No such file #> or directory'Error in gzfile(file, "wb") : cannot open the connection
 ```
 
 
@@ -426,19 +431,188 @@ ee_get_date_ic(ic_bounded_closest_5d)
 ```
 
 
-``?ee_ImageCollection_closest shows:` return "Value: An ee$Image closest to the specified date." - but it doesn't return an image.
+`?ee_ImageCollection_closest shows:` return "Value: An ee$Image closest to the specified date." - but it doesn't return an image.
 
 
 
+## rgeeExtra::ee_get()
+- wonder if this name is a bit ambiguous considering all the `get_*` functions there are in `rgee`,`GEE` and `rgeeExtra`... a couple ideas:
+- somethings with filter (filterIndex, filter_index)?
+- just ic_idx?
+- something with Subset ... subset_index?
 
 
-```{r exp-chunk}
+
+# Extra_spectralIndex
+
+```{r}
+# Load first COPERNICUS/S2_SR image, compute NDVI and SAVI
+s2_indices <- ee$ImageCollection("COPERNICUS/S2_SR")[[1]] %>%
+  ee$Image$Extra_preprocess() %>%
+  ee$Image$Extra_spectralIndex(c("NDVI", "SAVI"))
+
+# Set visualization parameters
+visParams <- list(
+  min = 0, 
+  max = 0.2, 
+  palette = c("brown", "yellow", "green")
+)
+
+# Display NDVI on map with custom visuals
+Map$centerObject(s2_indices, zoom = 10)
+Map$addLayer(
+  eeObject = s2_indices[["NDVI"]], 
+  visParams = visParams,
+  name = "NDVI"
+)
+
 ```
 
-```{r exp-chunk}
+## Simple Band Math
+
+```{r}
+# Compute squared NDVI from Landsat 8 image
+img <- ee$Image("LANDSAT/LC08/C02/T1_L2/LC08_007067_20140822")
+ndvi <- ((img[["SR_B5"]] - img[["SR_B4"]]) / (img[["SR_B5"]] + img[["SR_B4"]])) ** 2
+names(ndvi) <- "NDVI"
+
+# Visualize squared NDVI on map
+Map$centerObject(ndvi)
+Map$addLayer(
+  eeObject = ndvi, 
+  visParams = list(
+    min = 0, 
+    max = 0.2, 
+    palette = c("brown", "yellow", "green")
+    ),
+  name = "Squared NDVI"
+  )
 ```
 
+
+## Cloud Masking
 ```{r exp-chunk}
+img <- ee$ImageCollection("COPERNICUS/S2_SR") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_maskClouds(prob = 75,buffer = 300,cdi = -0.5)
+
+names(img)
+```
+
+
+
+# Aditional Vignette
+None of the code in this [aditional vignette](https://github.com/r-earthengine/rgeeExtra/blob/master/vignettes/Aditional.Rmd#L33) would run on my computer. I think it's because all the examples are missing there `Extra_` prefix (also: Aditional -> Additional) 
+
+
+Below I've added them so that I could get passed the errors and test them out
+## getOffsetParams()
+
+The very first time I ran this I got this error;
+```{r}
+ee$ImageCollection("NASA/GPM_L3/IMERG_V06") %>%
+  ee$ImageCollection$first() %>%
+  ee$ImageCollection$Extra_getOffsetParams()
+```
+
+
+
+## getScaleParams()
+```{r}
+ee$ImageCollection("NASA/GPM_L3/IMERG_V06") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_getScaleParams()
+
+?rgeeExtra:::Extra_getScaleParams
+
+```
+
+## Spectral Indices
+
+```{r}
+
+
+s2_indices <- ee$ImageCollection("COPERNICUS/S2_SR") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_preprocess()%>%
+  ee$Image$Extra_spectralIndex(c("NDVI", "SAVI"))
+
+names(s2_indices)
+
+
+
+
+```
+
+```{r}
+img <- ee$ImageCollection("COPERNICUS/S2_SR") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_maskClouds(prob = 75,buffer = 300,cdi = -0.5)
+
+names(img)
+```
+
+The `getStack()` example does not work w/ `Extra_` added. I don't think the getInfo() call belongs
+
+Original:
+
+```{r exp-chunk}
+ee$ImageCollection("NASA/GPM_L3/IMERG_V06") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$getSTAC() %>%
+  ee$Image$getInfo()
+#> Error in py_get_attr_impl(x, name, silent) : 
+#>   AttributeError: type object 'Image' has no attribute 'getSTAC'
+```
+
+add getInfo()
+```{r}
+ee$ImageCollection("NASA/GPM_L3/IMERG_V06") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_getSTAC() %>%
+  ee$Image$getInfo()
+#> Error: unexpected symbol in "add getInfo"  
+```
+
+works w/ `Extra_` added and no getInfo() call.
+```{r}
+ee$ImageCollection("NASA/GPM_L3/IMERG_V06") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_getSTAC()
+```
+
+
+```{r}
+ee$ImageCollection("NASA/GPM_L3/IMERG_V06") %>%
+  ee$ImageCollection$first() %>%
+  ee$Image$Extra_getDOI()
+```
+
+
+`|` operator - somehow i have `{rgee}` and `{rgeeExtras}` installed, but not leaflet.extras2
+
+I guess the required packages should be loaded at top of script? or put a note in the vignette?
+```{r}
+img <- ee$Image("LANDSAT/LC08/C01/T1_TOA/LC08_047027_20160819")
+img_sharp <- ee$Image$Extra_panSharpen(img, method="HPFA", qa=c("MSE", "RMSE"), maxPixels=1e13)
+
+Map$centerObject(img)
+# computer freezes 
+Map$addLayer(img_sharp, list(bands=c("B4", "B3", "B2"))) |
+Map$addLayer(img, list(bands=c("B4", "B3", "B2")))
+
+
+
+#> Error in ee_check_packages("| operator", c("leaflet", "leaflet.extras2")) : 
+#>  | operator required the package: leaflet.extras2. Please install it first.
+```
+
+```{r}
+ic <- ee$ImageCollection$Dataset$COPERNICUS_S2_SR %>%
+  ee$ImageCollection$Extra_preprocess()
+ic[[2]]
+
+
 ```
 
 #### **comments:**
