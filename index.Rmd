@@ -29,7 +29,7 @@ library(devtools)
 ### Review Submitted:
 **`r cat(sprintf("**Last updated:** %s", Sys.Date()))`**
 
-***
+
 
 <br>
 
@@ -74,14 +74,15 @@ High-level API to process Google Earth Engine (GEE) raster (ee.Image and ee.Imag
 
 ## Review info
 
-
-#### See [reviewer guidelines](https://ropensci.github.io/dev_guide/reviewerguide.html) for further information on the rOpenSci review process.
-
 **key review checks:**
 
 - Does the code comply with **general principles in the [Mozilla reviewing guide](https://mozillascience.github.io/codeReview/review.html)**?
 - Does the package **comply with the [ROpenSci packaging guide](https://ropensci.github.io/dev_guide/building.html)**?
+  +  from above link: "We strongly recommend short, descriptive names in lower case"
 - Are there **improvements** that could be made to the **code style?**
+  + generally snake_case recommendation not followed, but I think that is done purposefully to 
+  mimic GEE JavaScript syntax
+  + could clean up some sections of code that use `=` rather than `<-` for assignment
 - Is there **code duplication** in the package that should be reduced?
 - Are there **user interface improvements** that could be made?
 - Are there **performance improvements** that could be made?
@@ -162,8 +163,6 @@ I later restarted R and reinstalled to get this error:
 ```
 
 ***
-
-
 
 ## Check package integrity
 
@@ -278,7 +277,7 @@ It is good practice to
     ... and 46 more lines
 
 
-***
+
 
 ## Check package metadata files
 
@@ -318,7 +317,7 @@ help(package = "rgeeExtra")
 ```
 
 #### **comments:**
-
+- working now
 `help(package = "rgeeExtra")`return "URL '/help/library/rgeeExtra/html/00Index.html' not found" in Rstudio Help viewer
 
 
@@ -353,8 +352,8 @@ exports
 
 - is there a way to make it easier for users to access the function help panel (i.e ?func_name). For example how do users find out more information about the `Extra_*` functions from within Rstudio. In `{rgee}` we can access the documentation with `ee_help()`, but that doesn't work here. After quite a bit of searching I eventually realized there are unexported functions (i.e ee_Image_maskClouds,ee_Image_matchHistogram , etc ) with the help documentation, but this doesn't seem like a super user-friendly place to keep it?
 - enhancement idea: add a `list_spectral_indices()` type function (like eemont.listIndices())- would be cool if the object returned would provide the formula & reference for the index as well
-
-
+- mention [ee_extra](https://github.com/r-earthengine/ee_extra) package somewhere in readme?
+- a fair amount of functions freeze R session - any checks warnings that could be put in place?
 
 ```{r}
 library(rgee)
@@ -538,10 +537,6 @@ s2_indices <- ee$ImageCollection("COPERNICUS/S2_SR") %>%
   ee$Image$Extra_spectralIndex(c("NDVI", "SAVI"))
 
 names(s2_indices)
-
-
-
-
 ```
 
 ```{r}
@@ -608,11 +603,15 @@ Map$addLayer(img, list(bands=c("B4", "B3", "B2")))
 ```
 
 ```{r}
-ic <- ee$ImageCollection$Dataset$COPERNICUS_S2_SR %>%
-  ee$ImageCollection$Extra_preprocess()
-ic[[2]]
+rgeeExtra:::load_ee_Extra
+savi <- ee$Image("COPERNICUS/S2_SR/20190310T105851_20190310T110327_T30TVK") %>% 
+  ee$Image$preprocess()%>%
+  ee$Image$spectralIndex("SAVI")
 
+geoviz_1 <- list(palette = c('001fff', '00ffff', 'fbff00', 'ff0000'), min=0, max=0.3)
+savi[savi > 0.3] <- 0
 
+Map$addLayer(savi, geoviz, "SAVI") | Map$addLayer(log1p(savi)*2, geoviz, "log_SAVI")
 ```
 
 #### **comments:**
